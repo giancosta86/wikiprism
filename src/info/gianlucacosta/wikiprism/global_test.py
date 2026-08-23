@@ -5,7 +5,7 @@ from sqlite3 import Connection
 from info.gianlucacosta.eos.core.db.sqlite import ConnectionLender
 from info.gianlucacosta.eos.core.db.sqlite.serializer import BufferedDbSerializer
 
-from info.gianlucacosta.wikiprism.dictionary.sqlite import SqliteDictionary
+from .dictionary.sqlite import SqliteDictionary
 
 
 def create_wiki_stream(add_error: bool = False) -> StringIO:
@@ -64,14 +64,12 @@ class MyTestTerm:
 def create_db_serializer(connection_lender: ConnectionLender):
     serializer = BufferedDbSerializer(connection_lender)
 
-    @serializer.register(
-        """
+    @serializer.register("""
         INSERT INTO my_table
         (entry)
         VALUES
         (?)
-        """
-    )
+        """)
     def register_test_term(term: MyTestTerm):
         return [term.entry]
 
@@ -83,10 +81,8 @@ class MyTestSqliteDictionary(SqliteDictionary[MyTestTerm]):
         super().__init__(connection, create_db_serializer)
 
     def create_schema(self) -> None:
-        self._connection.execute(
-            """
+        self._connection.execute("""
             CREATE TABLE my_table (
                 entry TEXT PRIMARY KEY
             )
-            """
-        )
+            """)

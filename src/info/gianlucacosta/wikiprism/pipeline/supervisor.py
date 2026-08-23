@@ -1,7 +1,6 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from logging import getLogger
 from queue import Queue
-from typing import Generic, TypeVar
 
 from info.gianlucacosta.eos.core.threading.cancelable import CancelableThread
 
@@ -11,10 +10,8 @@ from .protocol import PipelineCanceledException
 from .sax import WikiPageExtractionThread
 from .strategy import PipelineStrategy
 
-TTerm = TypeVar("TTerm")
 
-
-class SupervisorThread(Generic[TTerm], CancelableThread):
+class SupervisorThread[TTerm](CancelableThread):
     _TERM_QUEUE_SIZE = 1024
 
     def __init__(
@@ -32,7 +29,7 @@ class SupervisorThread(Generic[TTerm], CancelableThread):
             super().request_cancel()
 
     def run(self) -> None:
-        start_time = datetime.now()
+        start_time = datetime.now(tz=UTC)
 
         try:
             self._logger.info("Pipeline started at %s", start_time)
@@ -64,9 +61,11 @@ class SupervisorThread(Generic[TTerm], CancelableThread):
         except Exception as ex:
             self._strategy.on_ended(ex)
         else:
-            self._strategy.on_ended(None if self._never_canceled else PipelineCanceledException())
+            self._strategy.on_ended(
+                None if self._never_canceled else PipelineCanceledException()
+            )
         finally:
-            end_time = datetime.now()
+            end_time = datetime.now(tz=UTC)
             pipeline_duration = end_time - start_time
             self._logger.info("Total time: %s", pipeline_duration)
 
@@ -82,20 +81,23 @@ class SupervisorThread(Generic[TTerm], CancelableThread):
             dictionary_thread = DictionaryOutputThread(
                 term_queue=term_queue,
                 dictionary_factory=self._strategy.create_dictionary,
-                continuation_provider=lambda: self._never_canceled and term_parsing_active,
+                continuation_provider=lambda: self._never_canceled
+                and term_parsing_active,
             )
 
             with TermExtractionPool(
                 pool_factory=self._strategy.create_pool,
                 term_extractor=self._strategy.get_term_extractor(),
                 term_queue=term_queue,
-                continuation_provider=lambda: self._never_canceled and term_parsing_active,
+                continuation_provider=lambda: self._never_canceled
+                and term_parsing_active,
                 on_message=self._strategy.on_message,
             ) as term_extraction_pool:
                 wiki_thread = WikiPageExtractionThread(
                     wiki_file=wiki_file,
                     on_page_extracted=term_extraction_pool.extract_terms_from_page,
-                    continuation_provider=lambda: self._never_canceled and term_parsing_active,
+                    continuation_provider=lambda: self._never_canceled
+                    and term_parsing_active,
                 )
 
                 self._logger.info("Now starting the wiki SAX thread!")
@@ -131,7 +133,9 @@ class SupervisorThread(Generic[TTerm], CancelableThread):
             dictionary_thread.exception,
         )
         if dictionary_thread.exception:
-            self._logger.warning("Errors found in the dictionary thread - exiting the pipeline")
+            self._logger.warning(
+                "Errors found in the dictionary thread - exiting the pipeline"
+            )
             raise dictionary_thread.exception
 
         self._logger.info(

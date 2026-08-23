@@ -1,17 +1,16 @@
 from queue import Queue
-from typing import Generic, TypeVar
 
 from info.gianlucacosta.eos.core.functional import ContinuationProvider
 from info.gianlucacosta.eos.core.logic.ranges import InclusiveRange
-from info.gianlucacosta.eos.core.threading.queues.adaptive import create_adaptive_queue_reader
+from info.gianlucacosta.eos.core.threading.queues.adaptive import (
+    create_adaptive_queue_reader,
+)
 from info.gianlucacosta.eos.core.threading.safe import SafeThread
 
 from .protocol import DictionaryFactory
 
-TTerm = TypeVar("TTerm")
 
-
-class DictionaryOutputThread(Generic[TTerm], SafeThread):
+class DictionaryOutputThread[TTerm](SafeThread):
     def __init__(
         self,
         term_queue: Queue[TTerm],
@@ -31,7 +30,9 @@ class DictionaryOutputThread(Generic[TTerm], SafeThread):
                 try:
                     dictionary.add_term(term)
                 except Exception as ex:
-                    self._logger.warning("Error while writing to the dictionary! %r", ex)
+                    self._logger.warning(
+                        "Error while writing to the dictionary! %r", ex
+                    )
 
             read_terms_from_queue = create_adaptive_queue_reader(
                 item_consumer=process_queue_term,

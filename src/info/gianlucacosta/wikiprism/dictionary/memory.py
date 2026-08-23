@@ -1,11 +1,7 @@
-from typing import TypeVar
-
 from . import Dictionary, DictionaryViewResult
 
-TTerm = TypeVar("TTerm")
 
-
-class InMemoryDictionary(Dictionary[TTerm]):
+class InMemoryDictionary[TTerm](Dictionary[TTerm]):
     """
     In-memory dictionary actually adding its terms to a Python set.
 

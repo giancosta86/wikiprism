@@ -1,6 +1,6 @@
 from io import StringIO
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any
 from xml.sax.handler import ContentHandler, ErrorHandler
 
 from info.gianlucacosta.eos.core.functional import Consumer, ContinuationProvider
@@ -55,8 +55,8 @@ class WikiContentHandler(ContentHandler):
         super().__init__()
         self._on_page_extracted = on_page_extracted
         self._continuation_provider = continuation_provider
-        self._current_title: Optional[str] = None
-        self._current_text: Optional[str] = None
+        self._current_title: str | None = None
+        self._current_text: str | None = None
         self._buffer = StringIO()
         self._parse_chars = False
 
@@ -96,7 +96,8 @@ class WikiContentHandler(ContentHandler):
                 if self._current_text is None:
                     if __debug__:
                         logger.info(
-                            "Skipping page '%s', which has no <text> tag", self._current_title
+                            "Skipping page '%s', which has no <text> tag",
+                            self._current_title,
                         )
                     return
 
@@ -119,7 +120,7 @@ class WikiErrorHandler(ErrorHandler):
             exception,
         )
 
-    def error(self, exception: Any) -> None:
+    def error(self, exception: Any) -> None:  # type: ignore[override]
         logger.error(
             "Error while parsing at [line %s, col %s]: %r",
             exception.getLineNumber(),
@@ -127,7 +128,7 @@ class WikiErrorHandler(ErrorHandler):
             exception,
         )
 
-    def fatalError(self, exception: Any) -> None:
+    def fatalError(self, exception: Any) -> None:  # type: ignore[override]
         logger.error(
             "Fatal error while parsing at [line %s, col %s]: %r",
             exception.getLineNumber(),

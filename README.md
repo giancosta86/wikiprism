@@ -106,4 +106,4 @@ For more details, please consult the docstrings, the tests, and possibly the who
 
 - [Cervantes](https://github.com/giancosta86/Cervantes/) - WikiPrism applied to Wikcionario in order to explore **Spanish** morphology with Python
 
-- [Eos-core](https://github.com/giancosta86/Eos-core) - type-checked and dependency-free modern utility library for Python
+- [eos-core](https://github.com/giancosta86/eos-core) - type-checked and dependency-free modern utility library for Python
