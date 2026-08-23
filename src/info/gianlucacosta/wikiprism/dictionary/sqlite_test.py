@@ -26,34 +26,34 @@ def test_insertion():
 def test_successful_command():
     my_term = MyTestTerm("Dodo")
 
-    with Uuid4TemporaryPath(extension_including_dot=".db") as db_path:
-        with (
-            closing(connect(db_path)) as inserting_connection,
-            MyTestSqliteDictionary(inserting_connection) as dictionary,
-        ):
-            inserting_connection.execute("""
+    with (
+        Uuid4TemporaryPath(extension_including_dot=".db") as db_path,
+        closing(connect(db_path)) as inserting_connection,
+        MyTestSqliteDictionary(inserting_connection) as dictionary,
+    ):
+        inserting_connection.execute("""
             CREATE TABLE my_table (
                 entry TEXT PRIMARY KEY
             )
             """)
 
-            inserting_connection.execute(
-                """
+        inserting_connection.execute(
+            """
             INSERT INTO my_table
             (entry)
             VALUES
             (?)
             """,
-                [my_term.entry],
-            )
+            [my_term.entry],
+        )
 
-            result = dictionary.execute_command("""
+        result = dictionary.execute_command("""
                 SELECT entry AS ciop
                 FROM my_table
                 """)
 
-            assert result.headers == ["ciop"]
-            assert result.rows == [("Dodo",)]
+        assert result.headers == ["ciop"]
+        assert result.rows == [("Dodo",)]
 
 
 def test_failing_command():
