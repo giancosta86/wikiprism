@@ -68,9 +68,12 @@ distribution = true
 
 includes = ["src"]
 
-excludes = ["src/**/*_test.py"]
-
-source-includes = ["src/**/*_test.py"]
+source-includes = [
+  'src/**/test_*.py',
+  'src/**/*_test.py',
+  'src/**/test_*/**',
+  'src/**/*_test/**',
+]
 
 
 [tool.pdm.scripts]

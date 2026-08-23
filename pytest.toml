@@ -2,6 +2,6 @@
 
 testpaths = ["src"]
 
-python_files = ["*_test.py"]
+python_files = ["test_*.py", "*_test.py"]
 
 addopts = ["--cov=src", "--cov-report=html", "--cov-report=term"]
