@@ -15,7 +15,7 @@ def test_insertion():
             dictionary.add_term(my_term)
 
         with (
-            connect(db_path) as checking_connection,
+            closing(connect(db_path)) as checking_connection,
             closing(checking_connection.cursor()) as cursor,
         ):
             cursor.execute("SELECT entry FROM my_table")
@@ -27,7 +27,10 @@ def test_successful_command():
     my_term = MyTestTerm("Dodo")
 
     with Uuid4TemporaryPath(extension_including_dot=".db") as db_path:
-        with connect(db_path) as inserting_connection:
+        with (
+            closing(connect(db_path)) as inserting_connection,
+            MyTestSqliteDictionary(inserting_connection) as dictionary,
+        ):
             inserting_connection.execute("""
             CREATE TABLE my_table (
                 entry TEXT PRIMARY KEY
@@ -44,7 +47,6 @@ def test_successful_command():
                 [my_term.entry],
             )
 
-        with MyTestSqliteDictionary(connect(db_path)) as dictionary:
             result = dictionary.execute_command("""
                 SELECT entry AS ciop
                 FROM my_table
@@ -57,7 +59,8 @@ def test_successful_command():
 def test_failing_command():
     with (
         Uuid4TemporaryPath(extension_including_dot=".db") as db_path,
-        MyTestSqliteDictionary(connect(db_path)) as dictionary,
+        closing(connect(db_path)) as connection,
+        MyTestSqliteDictionary(connection) as dictionary,
     ):
         result = dictionary.execute_command("""
                 SELECT inexisting_field AS ciop

@@ -71,7 +71,7 @@ class TestRunExtractionPipelineToSqlite:
             assert sqlite_pipeline_strategy.exception is None
 
             with (
-                connect(test_db_path) as checking_connection,
+                closing(connect(test_db_path)) as checking_connection,
                 closing(checking_connection.cursor()) as cursor,
             ):
                 cursor.execute("""
