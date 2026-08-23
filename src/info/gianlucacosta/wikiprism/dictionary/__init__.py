@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Generic, Iterable, Optional, TypeVar
+from typing import Any, Self
 
 from info.gianlucacosta.eos.core.functional import Result
-
-TTerm = TypeVar("TTerm")
 
 DictionaryViewRow = Iterable[Any]
 
@@ -17,14 +16,14 @@ class DictionaryView:
     Dictionaries can support any underlying data storage, but views should be presented as tables.
     """
 
-    headers: Optional[Iterable[str]]
-    rows: Optional[Iterable[DictionaryViewRow]]
+    headers: Iterable[str] | None
+    rows: Iterable[DictionaryViewRow] | None
 
 
 DictionaryViewResult = Result[DictionaryView]
 
 
-class Dictionary(Generic[TTerm], ABC):
+class Dictionary[TTerm](ABC):
     """
     Generic repository of language-related terms.
 
@@ -41,12 +40,10 @@ class Dictionary(Generic[TTerm], ABC):
     a "with" block.
     """
 
-    TSelf = TypeVar("TSelf")
-
-    def __enter__(self: TSelf) -> TSelf:
+    def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, *_: Any) -> None:
+    def __exit__(self, *_: object) -> None:
         self.close()
 
     @abstractmethod

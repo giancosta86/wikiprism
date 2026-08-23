@@ -1,16 +1,13 @@
 from abc import ABC, abstractmethod
 from logging import getLogger
-from typing import Generic, Optional, TypeVar
 
 from info.gianlucacosta.eos.core.multiprocessing.pool import AnyProcessPool
 
 from ..dictionary import Dictionary
 from .protocol import TermExtractor, WikiFile
 
-TTerm = TypeVar("TTerm")
 
-
-class PipelineStrategy(Generic[TTerm], ABC):
+class PipelineStrategy[TTerm](ABC):
     """
     Strategy for a term-extraction pipeline.
 
@@ -105,7 +102,7 @@ class PipelineStrategy(Generic[TTerm], ABC):
         """
 
     @abstractmethod
-    def on_ended(self, exception: Optional[Exception]) -> None:
+    def on_ended(self, exception: Exception | None) -> None:
         """
         Called at the end of the pipeline - be it successful or not.
 

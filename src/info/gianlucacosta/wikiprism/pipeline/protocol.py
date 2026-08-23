@@ -1,20 +1,18 @@
-from typing import Optional, TextIO, TypeVar, Union
+from typing import TextIO
 
 from info.gianlucacosta.eos.core.functional import Consumer, Mapper, Producer
 
 from ..dictionary import Dictionary
 from ..page import Page
 
-TTerm = TypeVar("TTerm")
+type WikiFile = str | TextIO
 
-WikiFile = Union[str, TextIO]
+type PipelineMessageListener = Consumer[str]
+type PipelineEndedListener = Consumer[Exception | None]
 
-PipelineMessageListener = Consumer[str]
-PipelineEndedListener = Consumer[Optional[Exception]]
+type DictionaryFactory[TTerm] = Producer[Dictionary[TTerm]]
 
-DictionaryFactory = Producer[Dictionary[TTerm]]
-
-TermExtractor = Mapper[Page, list[TTerm]]
+type TermExtractor[TTerm] = Mapper[Page, list[TTerm]]
 
 
 class PipelineCanceledException(Exception):

@@ -3,7 +3,6 @@ from os import makedirs
 from os.path import dirname
 from shutil import move
 from sqlite3 import Connection, connect
-from typing import Optional, TypeVar
 
 from info.gianlucacosta.eos.core.functional import Mapper
 from info.gianlucacosta.eos.core.functional.retries import call_with_retries
@@ -14,12 +13,10 @@ from ..dictionary.sqlite import SqliteDictionary
 from .protocol import PipelineCanceledException
 from .strategy import PipelineStrategy
 
-TTerm = TypeVar("TTerm")
-
-SqliteDictionaryFactory = Mapper[Connection, SqliteDictionary[TTerm]]
+type SqliteDictionaryFactory[TTerm] = Mapper[Connection, SqliteDictionary[TTerm]]
 
 
-class SqlitePipelineStrategy(PipelineStrategy[TTerm]):
+class SqlitePipelineStrategy[TTerm](PipelineStrategy[TTerm]):
     """
     Pipeline strategy dedicated to storing terms to a SQLite db.
 
@@ -40,7 +37,9 @@ class SqlitePipelineStrategy(PipelineStrategy[TTerm]):
         self._temp_db_path = Uuid4TemporaryPath(extension_including_dot=".db")
 
     @abstractmethod
-    def create_dictionary_from_connection(self, connection: Connection) -> SqliteDictionary[TTerm]:
+    def create_dictionary_from_connection(
+        self, connection: Connection
+    ) -> SqliteDictionary[TTerm]:
         """
         Given a SQLite connection, returns a SqliteDictionary based on it.
         """
@@ -78,6 +77,6 @@ class SqlitePipelineStrategy(PipelineStrategy[TTerm]):
 
         self._logger.info("Database ready!")
 
-    def on_ended(self, exception: Optional[Exception]) -> None:
+    def on_ended(self, exception: Exception | None) -> None:
         self._logger.info("Trying to delete the temporary db...")
         self._temp_db_path.try_to_remove()

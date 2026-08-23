@@ -1,24 +1,22 @@
 from logging import getLogger
 from queue import Queue
-from typing import TypeVar
 
 from info.gianlucacosta.eos.core.functional import ContinuationProvider
 from info.gianlucacosta.eos.core.logic.ranges import InclusiveRange
 from info.gianlucacosta.eos.core.multiprocessing.pool import ProcessPoolFactory
 from info.gianlucacosta.eos.core.multiprocessing.pool.facade import ProcessPoolFacade
 from info.gianlucacosta.eos.core.threading.queues import QueueWriter
-from info.gianlucacosta.eos.core.threading.queues.adaptive import create_adaptive_queue_writer
+from info.gianlucacosta.eos.core.threading.queues.adaptive import (
+    create_adaptive_queue_writer,
+)
 
 from ..page import Page
 from .protocol import PipelineMessageListener, TermExtractor
 
-TTerm = TypeVar("TTerm")
-
-
 worker_logger = getLogger(f"{__name__}.worker")
 
 
-def worker_function(
+def worker_function[TTerm](
     page: Page,
     term_extractor: TermExtractor[TTerm],
 ) -> list[TTerm]:
@@ -33,7 +31,7 @@ def worker_function(
         return []
 
 
-class TermExtractionPool(ProcessPoolFacade[list[TTerm]]):
+class TermExtractionPool[TTerm](ProcessPoolFacade[list[TTerm]]):
     _PROCESSED_PAGE_BATCH_SIZE = 507
 
     def __init__(
@@ -60,7 +58,9 @@ class TermExtractionPool(ProcessPoolFacade[list[TTerm]]):
 
             self._processed_page_count += 1
             if self._processed_page_count % self._PROCESSED_PAGE_BATCH_SIZE == 0:
-                on_message(f"Processed pages: {format(self._processed_page_count, ',')}")
+                on_message(
+                    f"Processed pages: {format(self._processed_page_count, ',')}"
+                )
 
         self._enqueue_terms = enqueue_terms
 

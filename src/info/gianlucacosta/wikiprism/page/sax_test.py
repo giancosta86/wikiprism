@@ -4,8 +4,8 @@ from xml.sax import SAXParseException, parseString
 from info.gianlucacosta.eos.core.functional import Producer
 from pytest import raises
 
-from info.gianlucacosta.wikiprism.page import Page
-from info.gianlucacosta.wikiprism.page.sax import WikiContentHandler, WikiSaxCanceledException
+from . import Page
+from .sax import WikiContentHandler, WikiSaxCanceledException
 
 
 def wiki(source: str):
@@ -35,8 +35,7 @@ def test_when_string_with_other_tags():
     return []
 
 
-@wiki(
-    """
+@wiki("""
     <wiki>
         <sometag>Hola!</sometag>
 
@@ -48,14 +47,12 @@ def test_when_string_with_other_tags():
 
         <someclosingtag>Z</someclosingtag>
     </wiki>
-    """
-)
+    """)
 def test_when_string_with_one_page():
     return [Page(title="Alpha", text="This is the text!")]
 
 
-@wiki(
-    """
+@wiki("""
     <wiki>
         <sometag>Hola!</sometag>
 
@@ -79,8 +76,7 @@ def test_when_string_with_one_page():
 
         <someclosingtag>Z</someclosingtag>
     </wiki>
-    """
-)
+    """)
 def test_when_string_with_multiple_pages():
     return [
         Page(title="Alpha", text="First text"),
@@ -89,8 +85,7 @@ def test_when_string_with_multiple_pages():
     ]
 
 
-@wiki(
-    """
+@wiki("""
     <wiki>
         <sometag>Hola!</sometag>
 
@@ -113,8 +108,7 @@ def test_when_string_with_multiple_pages():
 
         <someclosingtag>Z</someclosingtag>
     </wiki>
-    """
-)
+    """)
 def test_when_page_with_missing_title():
     return [
         Page(title="Alpha", text="First text"),
@@ -122,8 +116,7 @@ def test_when_page_with_missing_title():
     ]
 
 
-@wiki(
-    """
+@wiki("""
     <wiki>
         <sometag>Hola!</sometag>
 
@@ -146,8 +139,7 @@ def test_when_page_with_missing_title():
 
         <someclosingtag>Z</someclosingtag>
     </wiki>
-    """
-)
+    """)
 def test_when_string_with_missing_text():
     return [
         Page(title="Alpha", text="First text"),

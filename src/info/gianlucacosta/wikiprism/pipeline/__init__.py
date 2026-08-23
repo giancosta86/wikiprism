@@ -1,16 +1,12 @@
-from typing import TypeVar
-
 from info.gianlucacosta.eos.core.threading.cancelable import CancelableThreadHandle
 
 from .strategy import PipelineStrategy
 from .supervisor import SupervisorThread
 
-TTerm = TypeVar("TTerm")
-
-PipelineHandle = CancelableThreadHandle
+type PipelineHandle = CancelableThreadHandle
 
 
-def run_extraction_pipeline(
+def run_extraction_pipeline[TTerm](
     strategy: PipelineStrategy[TTerm],
 ) -> PipelineHandle:
     """

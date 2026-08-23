@@ -1,17 +1,19 @@
+from collections.abc import Iterable
 from contextlib import closing
 from sqlite3 import Connection, connect
-from typing import Iterable, Optional
 
 from info.gianlucacosta.eos.core.functional import Mapper
 from info.gianlucacosta.eos.core.io.files.temporary import Uuid4TemporaryPath
-from info.gianlucacosta.eos.core.multiprocessing.pool import AnyProcessPool, InThreadPool
+from info.gianlucacosta.eos.core.multiprocessing.pool import (
+    AnyProcessPool,
+    InThreadPool,
+)
 
-from info.gianlucacosta.wikiprism.dictionary.sqlite import SqliteDictionary
-from info.gianlucacosta.wikiprism.pipeline import run_extraction_pipeline
-from info.gianlucacosta.wikiprism.pipeline.protocol import TermExtractor, WikiFile
-from info.gianlucacosta.wikiprism.pipeline.sqlite import SqlitePipelineStrategy
-
-from ..shared import MyTestSqliteDictionary, MyTestTerm, create_wiki_stream
+from ..dictionary.sqlite import SqliteDictionary
+from ..global_test import MyTestSqliteDictionary, MyTestTerm, create_wiki_stream
+from . import run_extraction_pipeline
+from .protocol import TermExtractor, WikiFile
+from .sqlite import SqlitePipelineStrategy
 
 
 class BasicTestSqlitePipelineStrategy(SqlitePipelineStrategy[MyTestTerm]):
@@ -19,14 +21,16 @@ class BasicTestSqlitePipelineStrategy(SqlitePipelineStrategy[MyTestTerm]):
         self,
         target_db_path: str,
         sqlite_dictionary_factory: Mapper[Connection, SqliteDictionary[MyTestTerm]],
-        extractor: Optional[TermExtractor[MyTestTerm]] = None,
+        extractor: TermExtractor[MyTestTerm] | None = None,
         add_wiki_error: bool = False,
     ) -> None:
         super().__init__(target_db_path=target_db_path)
         self._sqlite_dictionary_factory = sqlite_dictionary_factory
-        self._extractor = extractor if extractor else lambda page: [MyTestTerm(page.text)]
+        self._extractor = (
+            extractor if extractor else lambda page: [MyTestTerm(page.text)]
+        )
         self._add_wiki_error = add_wiki_error
-        self.exception: Optional[Exception] = None
+        self.exception: Exception | None = None
 
     def create_pool(self) -> AnyProcessPool:
         return InThreadPool()
@@ -40,7 +44,7 @@ class BasicTestSqlitePipelineStrategy(SqlitePipelineStrategy[MyTestTerm]):
     def on_message(self, message: str) -> None:
         pass
 
-    def on_ended(self, exception: Optional[Exception]) -> None:
+    def on_ended(self, exception: Exception | None) -> None:
         self.exception = exception
         super().on_ended(exception)
 
@@ -66,17 +70,17 @@ class TestRunExtractionPipelineToSqlite:
 
             assert sqlite_pipeline_strategy.exception is None
 
-            with connect(test_db_path) as checking_connection:
-                with closing(checking_connection.cursor()) as cursor:
-                    cursor.execute(
-                        """
+            with (
+                connect(test_db_path) as checking_connection,
+                closing(checking_connection.cursor()) as cursor,
+            ):
+                cursor.execute("""
                     SELECT entry
                     FROM my_table
                     ORDER BY entry
-                    """
-                    )
+                    """)
 
-                    assert cursor.fetchall() == [(entry,) for entry in expected_entries]
+                assert cursor.fetchall() == [(entry,) for entry in expected_entries]
 
     def test_merry_path(self):
         self._expect_entries_from_sqlite_pipeline(

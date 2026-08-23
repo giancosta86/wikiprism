@@ -1,7 +1,6 @@
 from abc import abstractmethod
 from contextlib import closing
 from sqlite3 import Connection
-from typing import TypeVar
 
 from info.gianlucacosta.eos.core.db.sqlite import ConnectionLender
 from info.gianlucacosta.eos.core.db.sqlite.serializer import BufferedDbSerializer
@@ -9,10 +8,8 @@ from info.gianlucacosta.eos.core.functional import Mapper
 
 from . import Dictionary, DictionaryView, DictionaryViewResult
 
-TTerm = TypeVar("TTerm")
 
-
-class SqliteDictionary(Dictionary[TTerm]):
+class SqliteDictionary[TTerm](Dictionary[TTerm]):
     """
     Dictionary backed by a SQLite db connection, with delayed insertions.
 

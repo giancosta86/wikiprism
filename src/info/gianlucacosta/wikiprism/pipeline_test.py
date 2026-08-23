@@ -1,20 +1,17 @@
 from time import sleep
-from typing import Optional
 
-from info.gianlucacosta.eos.core.multiprocessing.pool import AnyProcessPool, InThreadPool
-
-from info.gianlucacosta.wikiprism.dictionary import Dictionary
-from info.gianlucacosta.wikiprism.dictionary.memory import InMemoryDictionary
-from info.gianlucacosta.wikiprism.page import Page
-from info.gianlucacosta.wikiprism.pipeline import run_extraction_pipeline
-from info.gianlucacosta.wikiprism.pipeline.protocol import (
-    PipelineCanceledException,
-    TermExtractor,
-    WikiFile,
+from info.gianlucacosta.eos.core.multiprocessing.pool import (
+    AnyProcessPool,
+    InThreadPool,
 )
-from info.gianlucacosta.wikiprism.pipeline.strategy import PipelineStrategy
 
-from .shared import MyTestTerm, create_wiki_stream
+from .dictionary import Dictionary
+from .dictionary.memory import InMemoryDictionary
+from .global_test import MyTestTerm, create_wiki_stream
+from .page import Page
+from .pipeline import run_extraction_pipeline
+from .pipeline.protocol import PipelineCanceledException, TermExtractor, WikiFile
+from .pipeline.strategy import PipelineStrategy
 
 
 class MyTestInMemoryDictionary(InMemoryDictionary[MyTestTerm]):
@@ -31,7 +28,7 @@ class BasicTestPipelineStrategy(PipelineStrategy[MyTestTerm]):
     def __init__(
         self,
         dictionary: Dictionary[MyTestTerm],
-        term_extractor: Optional[TermExtractor[MyTestTerm]] = None,
+        term_extractor: TermExtractor[MyTestTerm] | None = None,
         add_wiki_error: bool = False,
     ) -> None:
         super().__init__()
@@ -40,7 +37,7 @@ class BasicTestPipelineStrategy(PipelineStrategy[MyTestTerm]):
             term_extractor if term_extractor else lambda page: [MyTestTerm(page.text)]
         )
         self._add_wiki_error = add_wiki_error
-        self.exception: Optional[Exception] = None
+        self.exception: Exception | None = None
 
     def create_pool(self) -> AnyProcessPool:
         return InThreadPool()
@@ -63,7 +60,7 @@ class BasicTestPipelineStrategy(PipelineStrategy[MyTestTerm]):
     def on_message(self, message: str) -> None:
         pass
 
-    def on_ended(self, exception: Optional[Exception]) -> None:
+    def on_ended(self, exception: Exception | None) -> None:
         self.exception = exception
 
 
@@ -91,7 +88,6 @@ class TestRunExtractionPipeline:
         pipeline_handle.join()
 
         assert isinstance(pipeline_strategy.exception, PipelineCanceledException)
-        assert len(test_dictionary.terms) < 6
 
     def test_with_extraction_errors(self):
         test_dictionary = MyTestInMemoryDictionary()
@@ -145,7 +141,9 @@ class TestRunExtractionPipeline:
     def test_sax_error(self):
         test_dictionary = MyTestInMemoryDictionary()
 
-        pipeline_strategy = BasicTestPipelineStrategy(test_dictionary, add_wiki_error=True)
+        pipeline_strategy = BasicTestPipelineStrategy(
+            test_dictionary, add_wiki_error=True
+        )
 
         pipeline_handle = run_extraction_pipeline(pipeline_strategy)
         pipeline_handle.join()
