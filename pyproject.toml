@@ -68,14 +68,17 @@ distribution = true
 
 includes = ["src"]
 
-excludes = ["src/**/*_test.py"]
-
-source-includes = ["src/**/*_test.py"]
+source-includes = [
+  'src/**/test_*.py',
+  'src/**/*_test.py',
+  'src/**/test_*/**',
+  'src/**/*_test/**',
+]
 
 
 [tool.pdm.scripts]
 
-clean = 'rm -rf .mypy_cache .pdm-build .pytest_cache .ruff_cache .venv dist htmlcov .coverage .pdm-python pdm.lock'
+clean = 'rm -rf .coverage .mypy_cache .pdm-build .pdm-python .pytest_cache .ruff_cache .venv dist htmlcov pdm.lock'
 
 lint = 'ruff check src'
 
